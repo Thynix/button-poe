@@ -11,6 +11,7 @@ import adafruit_wiznet5k.adafruit_wiznet5k_socket as socket
 import adafruit_requests as requests
 import json
 import neopixel
+import time
 from config import *
 
 
@@ -34,13 +35,18 @@ def main():
     mac = get_mac(i2c)
 
     # Initialize ethernet interface with DHCP and the MAC we have from the 24AA02E48
-    eth = WIZNET5K(spi_bus, cs, mac=mac, hostname="PoE-FeatherWing-{}")
+    eth = WIZNET5K(spi_bus, cs, mac=mac, is_dhcp=False)
+
+    led[0] = YELLOW
+    while eth.set_dhcp(hostname="PoE-FeatherWing-{}") != 0:
+        time.sleep(1)
 
     # Initialize a requests object with a socket and ethernet interface
+    led[0] = PURPLE
     requests.set_socket(socket, eth)
 
     print("Chip:", eth.chip)
-    print("".join([f"{i:x}" for i in eth.mac_address]))
+    print(eth.pretty_mac(eth.mac_address))
     print(eth.pretty_ip(eth.ip_address))
 
     led[0] = GREEN
@@ -99,6 +105,8 @@ def get_mac(i2c):
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
+YELLOW = (255, 255, 0)
+PURPLE = (0, 255, 255)
 WHITE = (255, 255, 255)
 OFF = (0, 0, 0)
 
