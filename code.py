@@ -14,13 +14,12 @@ import neopixel
 from config import *
 
 
-def main():
-    print("startup")
 
+def main():
     # Status LED
     led = neopixel.NeoPixel(board.NEOPIXEL, 1)
     led.brightness = 0.3
-    led[0] = (0, 0, 255)
+    led[0] = BLUE
 
     button_pin = DigitalInOut(board.D9)
     button_pin.switch_to_input(digitalio.Pull.UP)
@@ -40,28 +39,25 @@ def main():
     # Initialize a requests object with a socket and ethernet interface
     requests.set_socket(socket, eth)
 
-    print("Chip Version:", eth.chip)
-    print("MAC Address:", [hex(i) for i in eth.mac_address])
-    print("My IP address is:", eth.pretty_ip(eth.ip_address))
+    print("Chip:", eth.chip)
+    print("".join([f"{i:x}" for i in eth.mac_address]))
+    print(eth.pretty_ip(eth.ip_address))
 
-    led[0] = (0, 255, 0)
-    print("ready")
+    led[0] = GREEN
 
     send_success = None
     while True:
         button.update()
 
         if button.fell:
-            print("on")
-            led[0] = (255, 0, 0)
+            led[0] = GREEN
             send_success = send_button_state("on")
         elif button.rose:
-            print("off")
-            led[0] = (0, 255, 0)
+            led[0] = RED
             send_success = send_button_state("off")
 
-        if button.fell or button.rose and not send_success:
-            led[0] = (255, 255, 255)
+        if button.fell or button.rose:
+            led[0] = OFF if send_success else WHITE
 
 
 
@@ -99,5 +95,11 @@ def get_mac(i2c):
     i2c.unlock()
     return mac
 
+
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
+WHITE = (255, 255, 255)
+OFF = (0, 0, 0)
 
 main()
